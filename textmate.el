@@ -66,9 +66,10 @@
 
 ;;; Minor mode
 
-(defvar *textmate-gf-exclude*
-  "(/|^)(\\.+[^/]+|vendor|fixtures|tmp|log|classes|build)($|/)|(\\.xcodeproj|\\.nib|\\.framework|\\.app|\\.pbproj|\\.pbxproj|\\.xcode|\\.xcodeproj|\\.bundle|\\.pyc)(/|$)"
-  "Regexp of files to exclude from `textmate-goto-file'.")
+(defvar *textmate-gf-excludes*
+  '("(/|^)(\\.+[^/]+|vendor|fixtures|tmp|log|classes|build)($|/)|(\\.xcodeproj|\\.nib|\\.framework|\\.app|\\.pbproj|\\.pbxproj|\\.xcode|\\.xcodeproj|\\.bundle|\\.pyc|\\.o)(/|$)"
+    "~$")
+  "List of Regexps of files to exclude from `textmate-goto-file'.")
 
 (defvar *textmate-project-roots*
   '(".git" ".hg" "Rakefile" "Makefile" "README" "build.xml" ".emacs-project")
@@ -316,15 +317,23 @@ Symbols matching the text at point are put first in the completion list."
 
 ;;; Utilities
 
+(defun textmate-grep-expressions-from-list (expressions-list)
+  "Creates a chain of singly-quoted -e expressions
+from EXPRESSIONS-LIST suitable for grep"
+  (let ((the-expressions
+         (mapcar
+          (lambda (st) (format "-e '%s'" st))
+          expressions-list)))
+    (mapconcat 'identity the-expressions " ")))
+
 (defun textmate-find-project-files (root)
   "Finds all files in a given project."
   (split-string
     (shell-command-to-string
      (concat
       (textmate-string-replace "%s" root textmate-find-files-command)
-      "  | grep -vE '"
-      *textmate-gf-exclude*
-      "' | sed 's:"
+      " | grep -vE " (textmate-grep-expressions-from-list *textmate-gf-excludes*)
+      " | sed 's:"
       *textmate-project-root*
       "/::'")) "\n" t))
 
