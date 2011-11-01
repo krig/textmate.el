@@ -86,6 +86,11 @@ completing filenames and symbols (`ido' by default)")
   "The command `textmate-project-files' uses to find files. %s will be replaced
 by the project root.")
 
+(defvar textmate-try-current-word-for-goto-symbol t
+  "If non-nil, will try to use `current-word' when doing a
+`textmate-goto-symbol' (if `current-word' is indeed a possible
+completion)")
+
 (defvar *textmate-completing-function-alist* '((ido ido-completing-read)
                                                (icicles  icicle-completing-read)
                                                (none completing-read))
@@ -164,6 +169,9 @@ by the project root.")
   "Used internally to cache the project root.")
 (defvar *textmate-project-files* '()
   "Used internally to cache the files in a project.")
+
+(defvar textmate-goto-symbol-hook nil
+  "Hook to run just before jumping to a symbol with `textmate-goto-symbol'")
 
 (defcustom textmate-word-characters "a-zA-Z0-9_" "Word Characters for Column Movement")
 ;;; Bindings
@@ -288,8 +296,15 @@ Symbols matching the text at point are put first in the completion list."
                     (setq symbol-names (cons symbol
                                              (delete symbol symbol-names))))
                   matching-symbols)))))
-    (let* ((selected-symbol (ido-completing-read "Symbol? " (reverse symbol-names)))
+    (let* ((selected-symbol (ido-completing-read
+                             "Symbol? " (reverse symbol-names) nil nil
+                             (if (and textmate-try-current-word-for-goto-symbol
+                                      (find-if (lambda (el)
+                                                 (search (current-word) el))
+                                               symbol-names))
+                                 (current-word))))
            (position (cdr (assoc selected-symbol name-and-pos))))
+      (run-hooks 'textmate-goto-symbol-hook)
       (goto-char (if (overlayp position) (overlay-start position) position)))))
 
 (defun textmate-goto-file ()
