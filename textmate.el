@@ -331,7 +331,7 @@ Symbols matching the text at point are put first in the completion list."
 (defun textmate-project-files (root)
   (sort
     (textmate-find-project-files root)
-    '(lambda (a b) (< (length a) (length b)))))
+    #'(lambda (a b) (< (length a) (length b)))))
 
 ;; http://snipplr.com/view/18683/stringreplace/
 (defun textmate-string-replace (this withthat in)
