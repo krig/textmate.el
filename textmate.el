@@ -304,8 +304,8 @@ Symbols matching the text at point are put first in the completion list."
        "Find file: "
        (mapcar
 	(lambda (e)
-	  (replace-regexp-in-string (textmate-project-root) "" e))
-	(textmate-cached-project-files (textmate-project-root))))))))
+	  (replace-regexp-in-string root "" e))
+	(textmate-cached-project-files root)))))))
 
 (defun textmate-clear-cache ()
   "Clears the project root and project files cache. Use after adding files."
