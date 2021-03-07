@@ -62,7 +62,7 @@
 
 ;;; Needed for flet
 (eval-when-compile
-  (require 'cl))
+  (require 'cl-lib))
 
 ;;; Minor mode
 
